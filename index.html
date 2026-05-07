@@ -2,591 +2,725 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Parfum · Gestor de Deudas</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a0a2e">
+<title>Parfum · Cobros</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --cream: #f5f0e8;
-    --gold: #b8975a;
-    --gold-light: #d4b483;
-    --dark: #1a1208;
-    --brown: #3d2b0e;
-    --rose: #c4847a;
-    --sage: #7a9e7e;
-    --ink: #2a2018;
-    --paper: #ede8dc;
-    --border: rgba(184,151,90,0.25);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--cream);
-    color: var(--ink);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    background-image:
-      radial-gradient(ellipse at 10% 20%, rgba(184,151,90,0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 90% 80%, rgba(196,132,122,0.07) 0%, transparent 50%);
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  .sync-indicator {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    color: var(--gold);
-    opacity: 0.85;
-  }
-
-  .sync-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #b8975a;
-    flex-shrink: 0;
-  }
-
-  /* Header */
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 28px 48px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(245,240,232,0.9);
-    backdrop-filter: blur(8px);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .logo {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .logo-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 26px;
-    font-weight: 300;
-    letter-spacing: 0.2em;
-    color: var(--dark);
-  }
-
-  .logo-sub {
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    color: var(--gold);
-    text-transform: uppercase;
-  }
-
-  .header-stats {
-    display: flex;
-    gap: 40px;
-  }
-
-  .stat {
-    text-align: right;
-  }
-
-  .stat-label {
-    font-size: 8px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 4px;
-  }
-
-  .stat-value {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--dark);
-  }
-
-  .stat-value.danger { color: var(--rose); }
-  .stat-value.safe { color: var(--sage); }
-
-  /* Main layout */
-  main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 48px 24px;
-  }
-
-  /* Section titles */
-  .section-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 24px;
-  }
-
-  .section-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 20px;
-    font-weight: 400;
-    font-style: italic;
-    color: var(--brown);
-    letter-spacing: 0.05em;
-  }
-
-  /* Add form */
-  .add-card {
-    background: var(--paper);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 32px;
-    margin-bottom: 48px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .add-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 3px; height: 100%;
-    background: linear-gradient(180deg, var(--gold), var(--gold-light));
-  }
-
-  .add-card h2 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
-    font-weight: 400;
-    color: var(--brown);
-    margin-bottom: 24px;
-    letter-spacing: 0.08em;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 120px;
-    gap: 16px;
-    align-items: end;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .field label {
-    font-size: 8px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-
-  .field input, .field select, .field textarea {
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: 1px;
-    padding: 10px 14px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .field input:focus, .field select:focus {
-    border-color: var(--gold);
-  }
-
-  .field input::placeholder { color: rgba(42,32,24,0.35); }
-
-  .btn-add {
-    background: var(--gold);
-    color: var(--cream);
-    border: none;
-    padding: 10px 20px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 1px;
-    transition: background 0.2s, transform 0.1s;
-    white-space: nowrap;
-    height: 40px;
-  }
-
-  .btn-add:hover { background: var(--brown); }
-  .btn-add:active { transform: scale(0.98); }
-
-  /* Filters */
-  .filters {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .filter-btn {
-    padding: 6px 16px;
-    border: 1px solid var(--border);
-    background: transparent;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--brown);
-    cursor: pointer;
-    border-radius: 1px;
-    transition: all 0.2s;
-  }
-
-  .filter-btn.active {
-    background: var(--gold);
-    color: var(--cream);
-    border-color: var(--gold);
-  }
-
-  .btn-csv {
-    border-color: rgba(184,151,90,0.5);
-    color: var(--gold);
-    margin-left: auto;
-  }
-
-  .btn-csv:hover {
-    background: var(--gold);
-    color: var(--cream);
-  }
-
-  .search-input {
-    margin-left: 0;
-    background: var(--paper);
-    border: 1px solid var(--border);
-    border-radius: 1px;
-    padding: 6px 14px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--ink);
-    outline: none;
-    width: 200px;
-  }
-
-  .search-input:focus { border-color: var(--gold); }
-
-  /* Table */
-  .table-wrap {
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  thead {
-    background: var(--brown);
-    color: var(--cream);
-  }
-
-  thead th {
-    padding: 14px 20px;
-    font-size: 8px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    text-align: left;
-    font-weight: 400;
-    font-family: 'DM Mono', monospace;
-  }
-
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
-
-  tbody tr:hover { background: rgba(184,151,90,0.05); }
-  tbody tr:last-child { border-bottom: none; }
-
-  tbody td {
-    padding: 16px 20px;
-    font-size: 12px;
-    vertical-align: middle;
-  }
-
-  .client-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-    font-weight: 400;
-    color: var(--dark);
-  }
-
-  .perfume-info {
-    font-size: 10px;
-    color: var(--gold);
-    letter-spacing: 0.05em;
-    margin-top: 2px;
-  }
-
-  .amount {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--brown);
-  }
-
-  .amount.paid { color: var(--sage); }
-
-  .date-cell {
-    font-size: 11px;
-    color: var(--ink);
-    opacity: 0.7;
-  }
-
-  .date-vence {
-    font-size: 10px;
-    color: var(--rose);
-    margin-top: 2px;
-    font-weight: 400;
-  }
-
-  .date-vence.ok { color: var(--sage); }
-
-  /* Status badge */
-  .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 1px;
-    font-size: 8px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    font-weight: 400;
-  }
-
-  .badge-pendiente { background: rgba(196,132,122,0.15); color: var(--rose); border: 1px solid rgba(196,132,122,0.3); }
-  .badge-pagado { background: rgba(122,158,126,0.15); color: var(--sage); border: 1px solid rgba(122,158,126,0.3); }
-  .badge-vencido { background: rgba(196,132,122,0.25); color: #c0392b; border: 1px solid rgba(192,57,43,0.3); }
-  .badge-abonado { background: rgba(184,151,90,0.15); color: var(--gold); border: 1px solid rgba(184,151,90,0.3); }
-
-  /* Actions */
-  .actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .btn-action {
-    padding: 5px 10px;
-    border: 1px solid var(--border);
-    background: transparent;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    border-radius: 1px;
-    transition: all 0.15s;
-    color: var(--brown);
-  }
-
-  .btn-pay { border-color: rgba(122,158,126,0.4); color: var(--sage); }
-  .btn-pay:hover { background: var(--sage); color: white; }
-
-  .btn-del { border-color: rgba(196,132,122,0.4); color: var(--rose); }
-  .btn-del:hover { background: var(--rose); color: white; }
-
-  .btn-edit { border-color: rgba(184,151,90,0.4); color: var(--gold); }
-  .btn-edit:hover { background: var(--gold); color: white; }
-
-  /* Empty state */
-  .empty-state {
-    text-align: center;
-    padding: 64px 24px;
-    color: rgba(42,32,24,0.4);
-  }
-
-  .empty-icon {
-    font-size: 40px;
-    margin-bottom: 16px;
-    opacity: 0.3;
-  }
-
-  .empty-text {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
-    font-style: italic;
-  }
-
-  /* Abono modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(26,18,8,0.6);
-    backdrop-filter: blur(4px);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 40px;
-    width: 380px;
-    position: relative;
-  }
-
-  .modal h3 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-weight: 300;
-    color: var(--dark);
-    margin-bottom: 8px;
-  }
-
-  .modal-sub {
-    font-size: 10px;
-    color: var(--gold);
-    letter-spacing: 0.1em;
-    margin-bottom: 24px;
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 16px; right: 20px;
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: var(--brown);
-    opacity: 0.5;
-  }
-
-  .modal-close:hover { opacity: 1; }
-
-  .modal .field { margin-bottom: 16px; }
-
-  .modal-btns {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-  }
-
-  .btn-confirm {
-    flex: 1;
-    background: var(--sage);
-    color: white;
-    border: none;
-    padding: 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 1px;
-    transition: background 0.2s;
-  }
-
-  .btn-confirm:hover { background: #5d7f61; }
-
-  .btn-cancel {
-    flex: 1;
-    background: transparent;
-    color: var(--brown);
-    border: 1px solid var(--border);
-    padding: 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 1px;
-  }
-
-  /* Abonos history */
-  .abonos-list {
-    margin-top: 16px;
-    max-height: 150px;
-    overflow-y: auto;
-  }
-
-  .abono-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 11px;
-  }
-
-  .abono-item:last-child { border-bottom: none; }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    header { padding: 16px 20px; flex-direction: column; gap: 16px; align-items: flex-start; }
-    .header-stats { gap: 20px; }
-    main { padding: 24px 16px; }
-    .form-grid { grid-template-columns: 1fr 1fr; }
-    .btn-add { grid-column: span 2; }
-    table { font-size: 11px; }
-    thead th, tbody td { padding: 10px 12px; }
-    .client-name { font-size: 14px; }
-  }
+:root {
+  --bg: #0f0820;
+  --bg2: #1a1035;
+  --card: #201545;
+  --card2: #2a1d58;
+  --accent: #c084fc;
+  --accent2: #e879f9;
+  --gold: #fbbf24;
+  --green: #34d399;
+  --red: #f87171;
+  --blue: #60a5fa;
+  --text: #f0e8ff;
+  --text2: #a78bca;
+  --text3: #6b5a8a;
+  --border: rgba(192,132,252,0.15);
+  --radius: 20px;
+  --radius-sm: 12px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+}
+
+/* ── App Shell ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Background glow ── */
+.app::before {
+  content: '';
+  position: fixed;
+  top: -100px; left: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(192,132,252,0.15) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.app::after {
+  content: '';
+  position: fixed;
+  bottom: -50px; right: -50px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(232,121,249,0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Header ── */
+.header {
+  position: relative;
+  z-index: 10;
+  padding: 52px 20px 16px;
+  background: linear-gradient(180deg, var(--bg) 0%, transparent 100%);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sync-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.sync-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+/* ── Stats row ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.stat-value.danger { color: var(--red); }
+.stat-value.success { color: var(--green); }
+.stat-value.neutral { color: var(--accent); }
+
+/* ── Scrollable content ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 120px;
+  position: relative;
+  z-index: 5;
+}
+
+.content::-webkit-scrollbar { display: none; }
+
+/* ── Section label ── */
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin: 20px 0 10px;
+  padding-left: 4px;
+}
+
+/* ── Filter chips ── */
+.filter-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filter-scroll::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+/* ── Search ── */
+.search-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.search-wrap input {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px 12px 40px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-wrap input::placeholder { color: var(--text3); }
+.search-wrap input:focus { border-color: var(--accent); }
+
+.search-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* ── Debt cards ── */
+.debt-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+
+.debt-card:active { transform: scale(0.98); }
+
+.debt-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+}
+
+.debt-card.pendiente::before { background: var(--gold); }
+.debt-card.vencido::before { background: var(--red); }
+.debt-card.abonado::before { background: var(--blue); }
+.debt-card.pagado::before { background: var(--green); }
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.client-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.perfume-tag {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.badge-pendiente { background: rgba(251,191,36,0.15); color: var(--gold); }
+.badge-vencido { background: rgba(248,113,113,0.15); color: var(--red); }
+.badge-abonado { background: rgba(96,165,250,0.15); color: var(--blue); }
+.badge-pagado { background: rgba(52,211,153,0.15); color: var(--green); }
+
+.card-amounts {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.amount-block { flex: 1; }
+
+.amount-label {
+  font-size: 10px;
+  color: var(--text3);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.amount-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.amount-value.red { color: var(--red); }
+.amount-value.green { color: var(--green); }
+
+/* Progress bar */
+.progress-wrap {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.4s ease;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dates-info {
+  font-size: 11px;
+  color: var(--text3);
+}
+
+.vence-tag {
+  font-size: 11px;
+  color: var(--red);
+  font-weight: 500;
+}
+
+.vence-tag.ok { color: var(--green); }
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-abonar {
+  background: rgba(192,132,252,0.2);
+  color: var(--accent);
+  border: 1px solid rgba(192,132,252,0.3);
+}
+
+.btn-abonar:active { background: rgba(192,132,252,0.35); }
+
+.btn-borrar {
+  background: rgba(248,113,113,0.12);
+  color: var(--red);
+  border: 1px solid rgba(248,113,113,0.2);
+}
+
+.btn-borrar:active { background: rgba(248,113,113,0.25); }
+
+/* ── Empty state ── */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
+}
+
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+.empty-text { font-size: 15px; font-family: 'Syne', sans-serif; }
+
+/* ── Bottom Nav ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: rgba(15,8,32,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0 24px;
+  z-index: 50;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 4px 20px;
+  border-radius: 12px;
+  transition: color 0.2s;
+}
+
+.nav-btn.active { color: var(--accent); }
+.nav-btn svg { width: 22px; height: 22px; }
+
+.nav-btn-add {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none;
+  border-radius: 18px;
+  width: 54px; height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(192,132,252,0.4);
+  margin-top: -20px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.nav-btn-add:active {
+  transform: scale(0.93);
+  box-shadow: 0 2px 10px rgba(192,132,252,0.3);
+}
+
+.nav-btn-add svg { width: 26px; height: 26px; color: white; }
+
+/* ── Sheet (bottom drawer) ── */
+.sheet-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet-overlay.open { display: flex; }
+
+.sheet {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 28px 28px 0 0;
+  width: 100%;
+  max-width: 430px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 12px 20px 40px;
+  animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet::-webkit-scrollbar { display: none; }
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sheet-handle {
+  width: 40px; height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  margin: 0 auto 20px;
+}
+
+.sheet-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+/* ── Form fields ── */
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+}
+
+.field input::placeholder { color: var(--text3); }
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  color: white;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+
+.btn-secondary {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s;
+}
+
+.btn-secondary:active { background: rgba(255,255,255,0.05); }
+
+/* ── Abonos history ── */
+.abonos-title {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 16px 0 8px;
+}
+
+.abono-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.abono-row:last-child { border-bottom: none; }
+.abono-fecha { color: var(--text2); }
+.abono-monto { color: var(--green); font-weight: 600; font-family: 'Syne', sans-serif; }
+
+/* ── CSV button ── */
+.csv-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s;
+}
+
+.csv-btn:active { background: var(--card2); }
+
+/* ── Pulse animation ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <span class="logo-name">Parfum</span>
-    <span class="logo-sub">Gestor de Cuentas por Cobrar</span>
-  </div>
-  <div class="header-stats">
-    <div class="sync-indicator">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-txt">Cargando...</span>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Total pendiente</div>
-      <div class="stat-value danger" id="totalPendiente">$0.00</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Total cobrado</div>
-      <div class="stat-value safe" id="totalCobrado">$0.00</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Clientes</div>
-      <div class="stat-value" id="totalClientes">0</div>
-    </div>
-  </div>
-</header>
+<div class="app">
 
-<main>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">🌸 Parfum</div>
+      <div class="sync-pill">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-txt">Cargando...</span>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Pendiente</div>
+        <div class="stat-value danger" id="totalPendiente">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cobrado</div>
+        <div class="stat-value success" id="totalCobrado">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Clientes</div>
+        <div class="stat-value neutral" id="totalClientes">0</div>
+      </div>
+    </div>
+  </div>
 
-  <!-- Add Form -->
-  <div class="add-card">
-    <h2>Registrar nueva deuda</h2>
-    <div class="form-grid">
-      <div class="field">
-        <label>Cliente</label>
-        <input type="text" id="inp-cliente" placeholder="Nombre completo">
-      </div>
-      <div class="field">
-        <label>Perfume / Producto</label>
-        <input type="text" id="inp-perfume" placeholder="Ej: Chanel No.5 100ml">
-      </div>
-      <div class="field">
-        <label>Monto ($)</label>
-        <input type="number" id="inp-monto" placeholder="0.00" min="0" step="0.01">
-      </div>
+  <!-- Scrollable list -->
+  <div class="content">
+    <div class="section-label">Registro de deudas</div>
+
+    <!-- Filters -->
+    <div class="filter-scroll">
+      <button class="chip active" onclick="setFiltro('todos', this)">Todos</button>
+      <button class="chip" onclick="setFiltro('pendiente', this)">Pendientes</button>
+      <button class="chip" onclick="setFiltro('vencido', this)">Vencidos</button>
+      <button class="chip" onclick="setFiltro('abonado', this)">Abonados</button>
+      <button class="chip" onclick="setFiltro('pagado', this)">Pagados</button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar cliente o perfume..." oninput="renderLista()" id="search-input">
+    </div>
+
+    <!-- List -->
+    <div id="lista-deudas"></div>
+    <div class="empty" id="empty-state" style="display:none;">
+      <div class="empty-icon">🌸</div>
+      <div class="empty-text">Sin registros aún</div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="mostrarVista('lista')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn-add" onclick="abrirFormulario()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button class="nav-btn" onclick="exportarCSV()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exportar
+    </button>
+  </div>
+
+</div>
+
+<!-- Sheet: Nueva deuda -->
+<div class="sheet-overlay" id="sheet-nueva" onclick="cerrarSheet('sheet-nueva', event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Nueva deuda</div>
+
+    <div class="field">
+      <label>Cliente *</label>
+      <input type="text" id="inp-cliente" placeholder="Nombre completo">
+    </div>
+    <div class="field">
+      <label>Perfume / Producto</label>
+      <input type="text" id="inp-perfume" placeholder="Ej: Club de Nuit 100ml">
+    </div>
+    <div class="field">
+      <label>Monto total *</label>
+      <input type="number" id="inp-monto" placeholder="0.00" min="0" step="0.01" inputmode="decimal">
+    </div>
+    <div class="field-row">
       <div class="field">
         <label>Fecha venta</label>
         <input type="date" id="inp-fecha">
@@ -595,129 +729,76 @@
         <label>Fecha de pago</label>
         <input type="date" id="inp-vence">
       </div>
-      <div class="field">
-        <label>Teléfono</label>
-        <input type="text" id="inp-tel" placeholder="Opcional">
-      </div>
-      <div class="field">
-        <label>Notas</label>
-        <input type="text" id="inp-notas" placeholder="Ej: Entregó anticipo $50">
-      </div>
-      <div class="field">
-        <button class="btn-add" onclick="agregarDeuda()">+ Agregar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filters -->
-  <div class="section-header">
-    <span class="section-title">Registro de deudas</span>
-  </div>
-
-  <div class="filters">
-    <button class="filter-btn active" onclick="setFiltro('todos', this)">Todos</button>
-    <button class="filter-btn" onclick="setFiltro('pendiente', this)">Pendientes</button>
-    <button class="filter-btn" onclick="setFiltro('vencido', this)">Vencidos</button>
-    <button class="filter-btn" onclick="setFiltro('abonado', this)">Abonados</button>
-    <button class="filter-btn" onclick="setFiltro('pagado', this)">Pagados</button>
-    <button class="filter-btn btn-csv" onclick="exportarCSV()" title="Descargar todos los registros como CSV">⬇ Exportar CSV</button>
-    <input type="text" class="search-input" placeholder="Buscar cliente..." oninput="renderTabla()">
-  </div>
-
-  <!-- Table -->
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Cliente</th>
-          <th>Monto total</th>
-          <th>Abonado</th>
-          <th>Resta</th>
-          <th>Fecha venta</th>
-          <th>Fecha pago</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tabla-body">
-      </tbody>
-    </table>
-    <div class="empty-state" id="empty-state" style="display:none;">
-      <div class="empty-icon">🌸</div>
-      <div class="empty-text">No hay registros aún</div>
-    </div>
-  </div>
-
-</main>
-
-<!-- Modal abono -->
-<div class="modal-overlay" id="modal-abono">
-  <div class="modal">
-    <button class="modal-close" onclick="cerrarModal()">×</button>
-    <h3 id="modal-nombre">Cliente</h3>
-    <div class="modal-sub" id="modal-perfume-info"></div>
-
-    <div class="field">
-      <label>Monto del abono ($)</label>
-      <input type="number" id="modal-monto" placeholder="0.00" min="0" step="0.01">
     </div>
     <div class="field">
-      <label>Fecha del abono</label>
-      <input type="date" id="modal-fecha">
+      <label>Teléfono</label>
+      <input type="tel" id="inp-tel" placeholder="Opcional" inputmode="tel">
     </div>
     <div class="field">
-      <label>Nota (opcional)</label>
-      <input type="text" id="modal-nota" placeholder="Ej: Transferencia, efectivo...">
+      <label>Notas</label>
+      <input type="text" id="inp-notas" placeholder="Ej: Dejó anticipo de $100">
     </div>
 
-    <div class="abonos-list" id="abonos-list"></div>
+    <button class="btn-primary" onclick="agregarDeuda()">Registrar deuda</button>
+    <button class="btn-secondary" onclick="cerrarSheet('sheet-nueva')">Cancelar</button>
+  </div>
+</div>
 
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn-confirm" onclick="registrarAbono()">Registrar abono</button>
+<!-- Sheet: Abono -->
+<div class="sheet-overlay" id="sheet-abono" onclick="cerrarSheet('sheet-abono', event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="modal-nombre">Abono</div>
+    <div style="font-size:13px; color:var(--text2); margin-bottom:16px;" id="modal-perfume-info"></div>
+
+    <div class="field">
+      <label>Monto del abono *</label>
+      <input type="number" id="modal-monto" placeholder="0.00" min="0" step="0.01" inputmode="decimal">
     </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Fecha</label>
+        <input type="date" id="modal-fecha">
+      </div>
+      <div class="field">
+        <label>Nota</label>
+        <input type="text" id="modal-nota" placeholder="Efectivo...">
+      </div>
+    </div>
+
+    <div id="abonos-list"></div>
+
+    <button class="btn-primary" onclick="registrarAbono()">Registrar abono</button>
+    <button class="btn-secondary" onclick="cerrarSheet('sheet-abono')">Cancelar</button>
   </div>
 </div>
 
 <script>
-  // ── Config ─────────────────────────────────────────────────────────────
   const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzaLqQf44ncZHDcuyJzET9sIxMcMSx6KWYib_Dh8inF3nOz05a6_Wm7WPx6ToLNlQI/exec';
 
-  // ── State ──────────────────────────────────────────────────────────────
   let deudas = JSON.parse(localStorage.getItem('parfum-deudas') || '[]');
   let filtroActual = 'todos';
   let modalId = null;
   let syncTimeout = null;
-
-  // Set today as default dates
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('inp-fecha').value = today;
-  document.getElementById('modal-fecha').value = today;
 
-  // ── Sync status UI ─────────────────────────────────────────────────────
+  // ── Sync status ────────────────────────────────────────────────────────
   function setSyncStatus(estado) {
     const dot = document.getElementById('sync-dot');
     const txt = document.getElementById('sync-txt');
-    if (estado === 'syncing') {
-      dot.style.background = '#b8975a';
-      txt.textContent = 'Guardando...';
-      dot.style.animation = 'pulse 1s infinite';
-    } else if (estado === 'ok') {
-      dot.style.background = '#7a9e7e';
-      txt.textContent = 'Sincronizado ✓';
-      dot.style.animation = 'none';
-    } else if (estado === 'error') {
-      dot.style.background = '#c4847a';
-      txt.textContent = 'Error al guardar';
-      dot.style.animation = 'none';
-    } else if (estado === 'loading') {
-      dot.style.background = '#b8975a';
-      txt.textContent = 'Cargando datos...';
-      dot.style.animation = 'pulse 1s infinite';
-    }
+    const states = {
+      syncing: { bg: '#fbbf24', label: 'Guardando...', anim: 'pulse 1s infinite' },
+      ok:      { bg: '#34d399', label: 'Sincronizado ✓', anim: 'none' },
+      error:   { bg: '#f87171', label: 'Sin conexión', anim: 'none' },
+      loading: { bg: '#fbbf24', label: 'Cargando...', anim: 'pulse 1s infinite' },
+    };
+    const s = states[estado] || states.loading;
+    dot.style.background = s.bg;
+    dot.style.animation = s.anim;
+    txt.textContent = s.label;
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────
+  // ── Storage ────────────────────────────────────────────────────────────
   function guardar() {
     localStorage.setItem('parfum-deudas', JSON.stringify(deudas));
     clearTimeout(syncTimeout);
@@ -725,402 +806,317 @@
     syncTimeout = setTimeout(guardarEnSheets, 800);
   }
 
-  // ── JSONP helper — único método que funciona sin servidor ─────────────
   function jsonpRequest(params, onSuccess, onError) {
-    const callbackName = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    const timeout = setTimeout(() => {
-      delete window[callbackName];
-      const s = document.getElementById('_jsonp_' + callbackName);
+    const cbName = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const tid = setTimeout(() => {
+      delete window[cbName];
+      const s = document.getElementById('_jp_' + cbName);
       if (s) s.remove();
       if (onError) onError('timeout');
-    }, 10000);
+    }, 12000);
 
-    window[callbackName] = function(data) {
-      clearTimeout(timeout);
-      delete window[callbackName];
-      const s = document.getElementById('_jsonp_' + callbackName);
+    window[cbName] = function(data) {
+      clearTimeout(tid);
+      delete window[cbName];
+      const s = document.getElementById('_jp_' + cbName);
       if (s) s.remove();
       if (onSuccess) onSuccess(data);
     };
 
-    const qs = Object.entries({ ...params, callback: callbackName, t: Date.now() })
+    const qs = Object.entries({ ...params, callback: cbName, t: Date.now() })
       .map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
 
     const script = document.createElement('script');
-    script.id = '_jsonp_' + callbackName;
+    script.id = '_jp_' + cbName;
     script.src = SHEETS_URL + '?' + qs;
-    script.onerror = () => {
-      clearTimeout(timeout);
-      delete window[callbackName];
-      if (onError) onError('script error');
-    };
+    script.onerror = () => { clearTimeout(tid); delete window[cbName]; if (onError) onError('error'); };
     document.head.appendChild(script);
   }
 
-  // ── Guardar en Sheets via JSONP GET ────────────────────────────────────
   function guardarEnSheets() {
     try {
-      // Usar iframe + form para POST (evita límite de URL y CORS)
-      let iframe = document.getElementById('_sheets_iframe');
+      let iframe = document.getElementById('_sh_if');
       if (!iframe) {
         iframe = document.createElement('iframe');
-        iframe.id = '_sheets_iframe';
-        iframe.name = '_sheets_iframe';
+        iframe.id = '_sh_if'; iframe.name = '_sh_if';
         iframe.style.cssText = 'display:none;position:absolute;';
         document.body.appendChild(iframe);
       }
-
-      let form = document.getElementById('_sheets_form');
+      let form = document.getElementById('_sh_fm');
       if (form) form.remove();
       form = document.createElement('form');
-      form.id = '_sheets_form';
-      form.method = 'POST';
-      form.action = SHEETS_URL;
-      form.target = '_sheets_iframe';
+      form.id = '_sh_fm'; form.method = 'POST';
+      form.action = SHEETS_URL; form.target = '_sh_if';
       form.style.cssText = 'display:none;position:absolute;';
 
       const inp = document.createElement('input');
-      inp.type = 'hidden';
-      inp.name = 'data';
-      inp.value = JSON.stringify(deudas);
+      inp.type = 'hidden'; inp.name = 'data'; inp.value = JSON.stringify(deudas);
       form.appendChild(inp);
-
       const act = document.createElement('input');
-      act.type = 'hidden';
-      act.name = 'action';
-      act.value = 'save';
+      act.type = 'hidden'; act.name = 'action'; act.value = 'save';
       form.appendChild(act);
-
       document.body.appendChild(form);
-
-      // Esperar respuesta del iframe
-      iframe.onload = () => {
-        setSyncStatus('ok');
-        form.remove();
-      };
-
-      // Timeout fallback — si no responde en 8s igual marcamos ok
-      // porque con no-cors el iframe.onload no siempre dispara
+      iframe.onload = () => { setSyncStatus('ok'); form.remove(); };
       setTimeout(() => setSyncStatus('ok'), 3000);
-
       form.submit();
-    } catch (err) {
-      console.error('Error guardando:', err);
-      setSyncStatus('error');
-    }
+    } catch(err) { setSyncStatus('error'); }
   }
 
-  // ── Cargar de Sheets via JSONP GET ─────────────────────────────────────
   function cargarDeSheets() {
     setSyncStatus('loading');
-    jsonpRequest(
-      { action: 'load' },
+    jsonpRequest({ action: 'load' },
       (data) => {
-        try {
-          if (Array.isArray(data) && data.length > 0) {
-            deudas = data.map(d => ({
-              ...d,
-              monto: parseFloat(d.monto) || 0,
-              abonos: typeof d.abonos === 'string'
-                ? JSON.parse(d.abonos || '[]')
-                : (d.abonos || [])
-            }));
-            localStorage.setItem('parfum-deudas', JSON.stringify(deudas));
-          }
-          setSyncStatus('ok');
-        } catch(e) {
-          setSyncStatus('error');
+        if (Array.isArray(data) && data.length > 0) {
+          deudas = data.map(d => ({
+            ...d,
+            monto: parseFloat(d.monto) || 0,
+            abonos: typeof d.abonos === 'string' ? JSON.parse(d.abonos || '[]') : (d.abonos || [])
+          }));
+          localStorage.setItem('parfum-deudas', JSON.stringify(deudas));
         }
-        renderTabla();
-        renderStats();
+        setSyncStatus('ok');
+        renderLista(); renderStats();
       },
-      () => {
-        console.warn('No se pudo cargar de Sheets, usando datos locales.');
-        setSyncStatus('error');
-        renderTabla();
-        renderStats();
-      }
+      () => { setSyncStatus('error'); renderLista(); renderStats(); }
     );
   }
 
-  // ── Exportar CSV ───────────────────────────────────────────────────────
-  function escaparCSV(val) {
-    if (val === null || val === undefined) return '';
-    const str = String(val);
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-      return '"' + str.replace(/"/g, '""') + '"';
-    }
-    return str;
-  }
-
-  function exportarCSV() {
-    if (deudas.length === 0) {
-      alert('No hay registros para exportar.');
-      return;
-    }
-
-    const headers = [
-      'Cliente', 'Telefono', 'Perfume/Producto',
-      'Monto Total', 'Total Abonado', 'Saldo Pendiente',
-      'Fecha Venta', 'Fecha Pago Acordada', 'Estado', 'Notas',
-      'Abonos (fecha|monto|nota)'
-    ];
-
-    const filas = deudas.map(d => {
-      const abonado = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
-      const resta = Math.max(0, d.monto - abonado);
-      const estado = getEstado(d);
-      const estadoLabel = { pendiente: 'Pendiente', pagado: 'Pagado', vencido: 'Vencido', abonado: 'Abonado' }[estado];
-      const abonosStr = (d.abonos || []).map(a => `${a.fecha}|${a.monto}|${a.nota||''}`).join(' / ');
-
-      return [
-        d.cliente,
-        d.tel || '',
-        d.perfume || '',
-        d.monto.toFixed(2),
-        abonado.toFixed(2),
-        resta.toFixed(2),
-        d.fecha || '',
-        d.fechaVence || '',
-        estadoLabel,
-        d.notas || '',
-        abonosStr
-      ].map(escaparCSV).join(',');
-    });
-
-    const csvContent = '\uFEFF' + [headers.join(','), ...filas].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const fecha = new Date().toISOString().split('T')[0];
-    a.href = url;
-    a.download = `parfum-deudas-${fecha}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
+  // ── Helpers ────────────────────────────────────────────────────────────
   function fmt(n) {
-    return '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const v = Number(n).toFixed(0);
+    return '$' + v.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
   function fmtDate(d) {
     if (!d) return '—';
     const [y, m, dia] = d.split('-');
-    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    return `${dia} ${meses[+m-1]} ${y}`;
+    return `${dia}/${m}/${y.slice(2)}`;
   }
 
   function getEstado(d) {
-    const abonado = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
-    const resta = d.monto - abonado;
-
-    if (resta <= 0) return 'pagado';
-
+    const ab = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
+    if (d.monto - ab <= 0) return 'pagado';
     const hoy = new Date(); hoy.setHours(0,0,0,0);
-    const vence = d.fechaVence ? new Date(d.fechaVence + 'T00:00:00') : null;
-
-    if (vence && vence < hoy) return 'vencido';
-    if (abonado > 0) return 'abonado';
+    const v = d.fechaVence ? new Date(d.fechaVence + 'T00:00:00') : null;
+    if (v && v < hoy) return 'vencido';
+    if (ab > 0) return 'abonado';
     return 'pendiente';
   }
 
-  function diasRestantes(fechaVence) {
-    if (!fechaVence) return null;
+  function diasRestantes(fv) {
+    if (!fv) return null;
     const hoy = new Date(); hoy.setHours(0,0,0,0);
-    const v = new Date(fechaVence + 'T00:00:00');
-    return Math.round((v - hoy) / 86400000);
+    return Math.round((new Date(fv + 'T00:00:00') - hoy) / 86400000);
   }
 
-  // ── Agregar deuda ──────────────────────────────────────────────────────
-  function agregarDeuda() {
-    const cliente = document.getElementById('inp-cliente').value.trim();
-    const perfume = document.getElementById('inp-perfume').value.trim();
-    const monto = parseFloat(document.getElementById('inp-monto').value);
-    const fecha = document.getElementById('inp-fecha').value;
-    const vence = document.getElementById('inp-vence').value;
-    const tel = document.getElementById('inp-tel').value.trim();
-    const notas = document.getElementById('inp-notas').value.trim();
+  // ── Render ─────────────────────────────────────────────────────────────
+  function renderStats() {
+    let pend = 0, cob = 0, cls = new Set();
+    deudas.forEach(d => {
+      const ab = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
+      pend += Math.max(0, d.monto - ab);
+      cob += ab;
+      cls.add(d.cliente);
+    });
+    document.getElementById('totalPendiente').textContent = fmt(pend);
+    document.getElementById('totalCobrado').textContent = fmt(cob);
+    document.getElementById('totalClientes').textContent = cls.size;
+  }
 
-    if (!cliente || !monto || monto <= 0) {
-      alert('Por favor ingresa el nombre del cliente y el monto.');
+  function renderLista() {
+    const busq = (document.getElementById('search-input').value || '').toLowerCase();
+    const lista = deudas.filter(d => {
+      const estado = getEstado(d);
+      const matchF = filtroActual === 'todos' || estado === filtroActual;
+      const matchB = !busq || d.cliente.toLowerCase().includes(busq) || (d.perfume||'').toLowerCase().includes(busq);
+      return matchF && matchB;
+    });
+
+    const container = document.getElementById('lista-deudas');
+    const empty = document.getElementById('empty-state');
+
+    if (lista.length === 0) {
+      container.innerHTML = '';
+      empty.style.display = 'block';
       return;
     }
+    empty.style.display = 'none';
 
-    const nueva = {
-      id: Date.now(),
-      cliente, perfume, monto, fecha, fechaVence: vence, tel, notas,
-      abonos: []
-    };
+    const estadoLabel = { pendiente:'Pendiente', vencido:'Vencido', abonado:'Abonado', pagado:'Pagado' };
 
-    deudas.unshift(nueva);
-    guardar();
-    renderTabla();
-    renderStats();
+    container.innerHTML = lista.map(d => {
+      const ab = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
+      const resta = Math.max(0, d.monto - ab);
+      const estado = getEstado(d);
+      const pct = Math.min(100, Math.round((ab / d.monto) * 100));
+      const dias = diasRestantes(d.fechaVence);
 
-    // Reset form
+      let venceHtml = '';
+      if (estado !== 'pagado' && d.fechaVence) {
+        if (dias < 0) venceHtml = `<span class="vence-tag">Venció hace ${Math.abs(dias)}d</span>`;
+        else if (dias === 0) venceHtml = `<span class="vence-tag">Vence hoy</span>`;
+        else if (dias <= 7) venceHtml = `<span class="vence-tag">Vence en ${dias}d</span>`;
+        else venceHtml = `<span class="vence-tag ok">Pago: ${fmtDate(d.fechaVence)}</span>`;
+      }
+
+      return `
+      <div class="debt-card ${estado}" onclick="abrirAbono(${d.id})">
+        <div class="card-top">
+          <div>
+            <div class="client-name">${d.cliente}</div>
+            ${d.perfume ? `<div class="perfume-tag">🌸 ${d.perfume}</div>` : ''}
+          </div>
+          <span class="badge badge-${estado}">${estadoLabel[estado]}</span>
+        </div>
+
+        <div class="card-amounts">
+          <div class="amount-block">
+            <div class="amount-label">Total</div>
+            <div class="amount-value">${fmt(d.monto)}</div>
+          </div>
+          <div class="amount-block">
+            <div class="amount-label">Abonado</div>
+            <div class="amount-value green">${ab > 0 ? fmt(ab) : '—'}</div>
+          </div>
+          <div class="amount-block">
+            <div class="amount-label">Resta</div>
+            <div class="amount-value ${estado === 'pagado' ? 'green' : 'red'}">${estado === 'pagado' ? '✓ Pagado' : fmt(resta)}</div>
+          </div>
+        </div>
+
+        ${ab > 0 ? `<div class="progress-wrap"><div class="progress-fill" style="width:${pct}%"></div></div>` : ''}
+
+        <div class="card-footer">
+          <div>
+            <div class="dates-info">Venta: ${fmtDate(d.fecha)}</div>
+            ${venceHtml}
+          </div>
+          <div class="card-actions" onclick="event.stopPropagation()">
+            ${estado !== 'pagado' ? `<button class="btn-sm btn-abonar" onclick="abrirAbono(${d.id})">+ Abonar</button>` : ''}
+            <button class="btn-sm btn-borrar" onclick="eliminar(${d.id})">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Actions ────────────────────────────────────────────────────────────
+  function setFiltro(f, btn) {
+    filtroActual = f;
+    document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderLista();
+  }
+
+  function abrirFormulario() {
+    document.getElementById('inp-fecha').value = today;
     document.getElementById('inp-cliente').value = '';
     document.getElementById('inp-perfume').value = '';
     document.getElementById('inp-monto').value = '';
     document.getElementById('inp-vence').value = '';
     document.getElementById('inp-tel').value = '';
     document.getElementById('inp-notas').value = '';
-    document.getElementById('inp-fecha').value = today;
+    document.getElementById('sheet-nueva').classList.add('open');
   }
 
-  // ── Eliminar ───────────────────────────────────────────────────────────
+  function agregarDeuda() {
+    const cliente = document.getElementById('inp-cliente').value.trim();
+    const monto = parseFloat(document.getElementById('inp-monto').value);
+    if (!cliente || !monto || monto <= 0) {
+      alert('Ingresa el cliente y el monto.');
+      return;
+    }
+    deudas.unshift({
+      id: Date.now(),
+      cliente,
+      perfume: document.getElementById('inp-perfume').value.trim(),
+      monto,
+      fecha: document.getElementById('inp-fecha').value,
+      fechaVence: document.getElementById('inp-vence').value,
+      tel: document.getElementById('inp-tel').value.trim(),
+      notas: document.getElementById('inp-notas').value.trim(),
+      abonos: []
+    });
+    guardar(); renderLista(); renderStats();
+    cerrarSheet('sheet-nueva');
+  }
+
   function eliminar(id) {
     if (!confirm('¿Eliminar este registro?')) return;
     deudas = deudas.filter(d => d.id !== id);
-    guardar();
-    renderTabla();
-    renderStats();
+    guardar(); renderLista(); renderStats();
   }
 
-  // ── Modal abono ────────────────────────────────────────────────────────
   function abrirAbono(id) {
     modalId = id;
     const d = deudas.find(x => x.id === id);
+    const ab = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
+    const resta = d.monto - ab;
     document.getElementById('modal-nombre').textContent = d.cliente;
-    document.getElementById('modal-perfume-info').textContent = d.perfume ? `${d.perfume} · ${fmt(d.monto)}` : fmt(d.monto);
+    document.getElementById('modal-perfume-info').textContent =
+      (d.perfume ? `🌸 ${d.perfume} · ` : '') + `Resta: ${fmt(resta)}`;
     document.getElementById('modal-monto').value = '';
     document.getElementById('modal-nota').value = '';
     document.getElementById('modal-fecha').value = today;
 
-    // Show abonos history
     const lista = document.getElementById('abonos-list');
     if (d.abonos && d.abonos.length > 0) {
-      lista.innerHTML = '<div style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Historial de abonos</div>' +
-        d.abonos.map(a => `<div class="abono-item"><span>${fmtDate(a.fecha)} ${a.nota ? '· '+a.nota : ''}</span><span style="color:var(--sage)">${fmt(a.monto)}</span></div>`).join('');
+      lista.innerHTML = `<div class="abonos-title">Historial de abonos</div>` +
+        d.abonos.map(a => `
+          <div class="abono-row">
+            <span class="abono-fecha">${fmtDate(a.fecha)}${a.nota ? ' · ' + a.nota : ''}</span>
+            <span class="abono-monto">${fmt(a.monto)}</span>
+          </div>`).join('');
     } else {
       lista.innerHTML = '';
     }
-
-    document.getElementById('modal-abono').classList.add('open');
-  }
-
-  function cerrarModal() {
-    document.getElementById('modal-abono').classList.remove('open');
-    modalId = null;
+    document.getElementById('sheet-abono').classList.add('open');
   }
 
   function registrarAbono() {
     const monto = parseFloat(document.getElementById('modal-monto').value);
-    const fecha = document.getElementById('modal-fecha').value;
-    const nota = document.getElementById('modal-nota').value.trim();
-
     if (!monto || monto <= 0) { alert('Ingresa un monto válido.'); return; }
-
     const d = deudas.find(x => x.id === modalId);
-    const abonado = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
-    const resta = d.monto - abonado;
-
-    if (monto > resta + 0.001) {
-      alert(`El monto supera la deuda restante (${fmt(resta)})`);
-      return;
-    }
-
-    d.abonos.push({ monto, fecha, nota });
-    guardar();
-    cerrarModal();
-    renderTabla();
-    renderStats();
-  }
-
-  // ── Filtro y búsqueda ──────────────────────────────────────────────────
-  function setFiltro(f, btn) {
-    filtroActual = f;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderTabla();
-  }
-
-  // ── Render stats ───────────────────────────────────────────────────────
-  function renderStats() {
-    let pendiente = 0, cobrado = 0, clientes = new Set();
-    deudas.forEach(d => {
-      const abonado = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
-      pendiente += Math.max(0, d.monto - abonado);
-      cobrado += abonado;
-      clientes.add(d.cliente);
+    const ab = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
+    if (monto > d.monto - ab + 0.01) { alert('El monto supera la deuda.'); return; }
+    d.abonos.push({
+      monto,
+      fecha: document.getElementById('modal-fecha').value,
+      nota: document.getElementById('modal-nota').value.trim()
     });
-    document.getElementById('totalPendiente').textContent = fmt(pendiente);
-    document.getElementById('totalCobrado').textContent = fmt(cobrado);
-    document.getElementById('totalClientes').textContent = clientes.size;
+    guardar(); cerrarSheet('sheet-abono'); renderLista(); renderStats();
   }
 
-  // ── Render tabla ───────────────────────────────────────────────────────
-  function renderTabla() {
-    const busqueda = document.querySelector('.search-input').value.toLowerCase();
+  function cerrarSheet(id, event) {
+    if (event && event.target !== document.getElementById(id)) return;
+    document.getElementById(id).classList.remove('open');
+  }
 
-    let lista = deudas.filter(d => {
-      const estado = getEstado(d);
-      const matchFiltro = filtroActual === 'todos' || estado === filtroActual;
-      const matchBusq = !busqueda || d.cliente.toLowerCase().includes(busqueda) || (d.perfume||'').toLowerCase().includes(busqueda);
-      return matchFiltro && matchBusq;
+  // ── CSV ────────────────────────────────────────────────────────────────
+  function exportarCSV() {
+    if (!deudas.length) { alert('No hay registros.'); return; }
+    const esc = v => { const s = String(v||''); return s.includes(',') || s.includes('"') ? '"' + s.replace(/"/g,'""') + '"' : s; };
+    const headers = ['Cliente','Telefono','Perfume','Monto','Abonado','Resta','Fecha Venta','Fecha Pago','Estado','Notas'];
+    const filas = deudas.map(d => {
+      const ab = (d.abonos||[]).reduce((s,a)=>s+a.monto,0);
+      return [d.cliente,d.tel,d.perfume,d.monto.toFixed(2),ab.toFixed(2),(d.monto-ab).toFixed(2),d.fecha,d.fechaVence,getEstado(d),d.notas].map(esc).join(',');
     });
+    const csv = '\uFEFF' + [headers.join(','), ...filas].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    a.download = `parfum-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  }
 
-    const tbody = document.getElementById('tabla-body');
-    const empty = document.getElementById('empty-state');
-
-    if (lista.length === 0) {
-      tbody.innerHTML = '';
-      empty.style.display = 'block';
-      return;
-    }
-    empty.style.display = 'none';
-
-    tbody.innerHTML = lista.map(d => {
-      const abonado = (d.abonos || []).reduce((s, a) => s + a.monto, 0);
-      const resta = d.monto - abonado;
-      const estado = getEstado(d);
-      const dias = diasRestantes(d.fechaVence);
-
-      let badgeClass = `badge-${estado}`;
-      let badgeLabel = { pendiente: 'Pendiente', pagado: 'Pagado', vencido: 'Vencido', abonado: 'Abonado' }[estado];
-
-      let diasInfo = '';
-      if (estado !== 'pagado' && d.fechaVence) {
-        if (dias < 0) diasInfo = `<div class="date-vence">Venció hace ${Math.abs(dias)}d</div>`;
-        else if (dias === 0) diasInfo = `<div class="date-vence">Vence hoy</div>`;
-        else if (dias <= 7) diasInfo = `<div class="date-vence">Vence en ${dias}d</div>`;
-        else diasInfo = `<div class="date-vence ok">Vence en ${dias}d</div>`;
-      }
-
-      return `<tr>
-        <td>
-          <div class="client-name">${d.cliente}</div>
-          ${d.perfume ? `<div class="perfume-info">🌸 ${d.perfume}</div>` : ''}
-          ${d.tel ? `<div class="perfume-info">📱 ${d.tel}</div>` : ''}
-          ${d.notas ? `<div class="perfume-info" style="color:var(--brown);opacity:.7">📝 ${d.notas}</div>` : ''}
-        </td>
-        <td><span class="amount">${fmt(d.monto)}</span></td>
-        <td><span class="amount paid">${abonado > 0 ? fmt(abonado) : '—'}</span></td>
-        <td><span class="amount ${estado === 'pagado' ? 'paid' : ''}">${estado === 'pagado' ? '✓' : fmt(resta)}</span></td>
-        <td><div class="date-cell">${fmtDate(d.fecha)}</div></td>
-        <td>
-          <div class="date-cell">${fmtDate(d.fechaVence)}</div>
-          ${diasInfo}
-        </td>
-        <td><span class="badge ${badgeClass}">${badgeLabel}</span></td>
-        <td>
-          <div class="actions">
-            ${estado !== 'pagado' ? `<button class="btn-action btn-pay" onclick="abrirAbono(${d.id})">Abonar</button>` : ''}
-            <button class="btn-action btn-del" onclick="eliminar(${d.id})">Borrar</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
+  function mostrarVista(v) {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
   }
 
   // ── Init ───────────────────────────────────────────────────────────────
-  renderTabla();
+  renderLista();
   renderStats();
-  cargarDeSheets(); // load fresh data from Sheets on every page open
-
-  // Close modal on overlay click
-  document.getElementById('modal-abono').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
-  });
+  cargarDeSheets();
 </script>
 </body>
 </html>
